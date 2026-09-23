@@ -1,0 +1,20 @@
+// ============================================================
+// 01 — AI Agent Inventory
+// What:  One row per AI agent visible to Defender XDR
+//        (Copilot Studio / Microsoft 365 Copilot agents).
+// Table: AgentsInfo — Defender XDR Advanced Hunting.
+// How to test: paste into Advanced Hunting and Run.
+//        Expect one row per non-deleted agent.
+//        Expand RawAgentInfo to find the display-name field
+//        used in your tenant.
+// ============================================================
+AgentsInfo
+| summarize arg_max(Timestamp, *) by AgentId
+| where LifecycleStatus != "Deleted"
+| project AgentId,
+          Platform,
+          PublishedStatus,
+          LifecycleStatus,
+          LastSeenUtc = Timestamp,
+          RawAgentInfo
+| order by Platform, AgentId
