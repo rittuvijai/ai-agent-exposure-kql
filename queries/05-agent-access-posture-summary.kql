@@ -1,0 +1,16 @@
+// ============================================================
+// 05 — Agent Access Posture Summary
+// What:  One-glance distribution of agent sprawl: counts by
+//        platform, publish state, app type, and sharing scope.
+//        The executive view — "how exposed is our AI estate?"
+// Table: AgentsInfo — Defender XDR Advanced Hunting.
+// How to test: paste into Advanced Hunting and Run.
+//        Expect a small summary table, biggest counts first.
+// ============================================================
+AgentsInfo
+| summarize arg_max(Timestamp, *) by AgentId
+| where LifecycleStatus != "Deleted"
+| extend AppType = tostring(RawAgentInfo.appType),
+         AllowAllUsers = tostring(RawAgentInfo.allowForAllUsers)
+| summarize AgentCount = count() by Platform, PublishedStatus, AppType, AllowAllUsers
+| order by AgentCount desc
