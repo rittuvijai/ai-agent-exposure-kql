@@ -1,0 +1,12 @@
+// ============================================================
+// 03a — Exposure Graph: node types in this tenant
+// What:  One sample node per NodeLabel — learn what kinds of
+//        entities your exposure graph actually contains before
+//        writing targeted queries.
+// Table: ExposureGraphNodes — Defender XDR Advanced Hunting
+//        (requires Microsoft Security Exposure Management).
+// How to test: paste into Advanced Hunting and Run.
+//        Expect one row per node type present in the tenant.
+// ============================================================
+ExposureGraphNodes
+| summarize take_any(*) by NodeLabel
