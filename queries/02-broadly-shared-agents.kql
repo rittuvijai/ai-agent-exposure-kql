@@ -1,0 +1,22 @@
+// ============================================================
+// 02 — Broadly Shared Agents (blast-radius check)
+// What:  Agents reachable by EVERY user in the tenant.
+//        Widest exposure = highest review priority. Any row
+//        here deserves a check of what data the agent can touch.
+// Table: AgentsInfo — Defender XDR Advanced Hunting.
+// How to test: paste into Advanced Hunting and Run.
+//        Rows returned = agents with tenant-wide reach.
+// ============================================================
+AgentsInfo
+| summarize arg_max(Timestamp, *) by AgentId
+| where LifecycleStatus != "Deleted"
+| extend AppType = tostring(RawAgentInfo.appType),
+         AllowAllUsers = tostring(RawAgentInfo.allowForAllUsers)
+| where AllowAllUsers == "true"
+| project AgentId,
+          Platform,
+          PublishedStatus,
+          AppType,
+          AllowAllUsers,
+          LastSeenUtc = Timestamp
+| order by Platform, AgentId
