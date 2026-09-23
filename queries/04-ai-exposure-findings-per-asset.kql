@@ -1,0 +1,30 @@
+// ============================================================
+// 04 — AI Agent Exposure Findings, one row per asset
+// What:  Every AI-agent-related exposure recommendation,
+//        rolled up to one row per affected asset so the
+//        output stays signal, not noise.
+// Tables: ExposureGraphNodes, ExposureGraphEdges —
+//         Defender XDR Advanced Hunting.
+// How to test:
+//   1) Run 03b first; pick the NodeLabel value that represents
+//      AI-agent recommendations in your tenant.
+//   2) Replace AI_AGENT_NODE_LABEL below with that value.
+//   3) Run. Expect one row per affected asset with its findings.
+// Note: the exposure graph is current-state data. If your
+//   tenant's finding nodes carry a timestamp property, swap
+//   the make_set rollup for an arg_max() dedup on it.
+// ============================================================
+let AgentFindings =
+    ExposureGraphNodes
+    | where NodeLabel == "AI_AGENT_NODE_LABEL" // <-- replace with the label found in 03b
+    | where NodeName has_any ("agent", "AI", "MCP", "Copilot")
+        or tostring(NodeProperties) has_any ("agent", "MCP", "Copilot")
+    | project FindingNodeId = NodeId, Finding = NodeName;
+AgentFindings
+| join kind=inner (
+    ExposureGraphEdges
+    | where EdgeLabel == "affecting"
+    | project SourceNodeId, AssetName = TargetNodeName, AssetType = TargetNodeLabel
+) on $left.FindingNodeId == $right.SourceNodeId
+| summarize Findings = make_set(Finding) by AssetName, AssetType
+| order by AssetName
