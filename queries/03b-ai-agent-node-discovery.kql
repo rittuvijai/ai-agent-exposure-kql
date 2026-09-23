@@ -1,0 +1,14 @@
+// ============================================================
+// 03b — Exposure Graph: AI-agent-related node discovery
+// What:  Which node types in YOUR graph relate to AI agents?
+//        The winning NodeLabel becomes the filter in query 04.
+// Table: ExposureGraphNodes — Defender XDR Advanced Hunting.
+// How to test: paste into Advanced Hunting and Run.
+//        Note the NodeLabel values returned — e.g. anything
+//        with "recommendation", "agent", or "AI".
+// ============================================================
+ExposureGraphNodes
+| where NodeName has_any ("agent", "AI", "MCP", "Copilot")
+    or tostring(NodeProperties) has_any ("agent", "MCP", "Copilot")
+| summarize SampleNode = take_any(NodeName) by NodeLabel
+| order by NodeLabel
